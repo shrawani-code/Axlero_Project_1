@@ -4,6 +4,7 @@ import "./styles.css";
 function App() {
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
+  const [category, setCategory] = useState("All");
 
   useEffect(() => {
     fetch("http://localhost:5000/api/products")
@@ -50,6 +51,16 @@ function App() {
     );
   };
 
+  const categories = [
+    "All",
+    ...new Set(products.map((product) => product.category)),
+  ];
+
+  const filteredProducts =
+    category === "All"
+      ? products
+      : products.filter((product) => product.category === category);
+
   const total = cart.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
@@ -76,8 +87,23 @@ function App() {
         <section className="products">
           <h2>Products</h2>
 
+          <div className="filter">
+            <label>Category: </label>
+
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+            >
+              {categories.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div className="product-grid">
-            {products.map((product) => (
+            {filteredProducts.map((product) => (
               <div className="product-card" key={product._id}>
                 <div className="product-image">🛍️</div>
 
@@ -85,6 +111,7 @@ function App() {
                   <h3>{product.name}</h3>
                   <p>{product.category}</p>
                   <h4>₹{product.price}</h4>
+
                   <p>
                     Vendor: {product.vendorId?.name || "Vendor"}
                   </p>
@@ -109,7 +136,9 @@ function App() {
                 <div className="cart-item" key={item._id}>
                   <div>
                     <h3>{item.name}</h3>
-                    <p>₹{item.price} × {item.quantity}</p>
+                    <p>
+                      ₹{item.price} × {item.quantity}
+                    </p>
                   </div>
 
                   <div>
