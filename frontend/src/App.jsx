@@ -1,64 +1,76 @@
 import { useEffect, useState } from "react";
+import "./styles.css";
 
 function App() {
   const [products, setProducts] = useState([]);
-  const [cart, setCart] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     fetch("http://localhost:5000/api/products")
-      .then((response) => response.json())
-      .then((data) => setProducts(data))
-      .catch((error) => console.error("Error:", error));
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error("Failed to load products");
+        }
+        return res.json();
+      })
+      .then((data) => {
+        setProducts(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
   }, []);
 
-  const addToCart = (product) => {
-    setCart([...cart, product]);
-  };
-
   return (
-    <div>
-      <nav className="navbar">
-        <h2>Axlero Marketplace</h2>
+    <div className="app">
+      <header className="navbar">
+        <h1>Axlero Marketplace</h1>
 
-        <div>
+        <nav>
           <span>Home</span>
           <span>Products</span>
-          <span>Vendors</span>
-          <span>Cart ({cart.length})</span>
-        </div>
-      </nav>
+          <span>Cart 🛒</span>
+        </nav>
+      </header>
 
-      <section className="hero">
-        <h1>Multi-Vendor Marketplace</h1>
-        <p>Shop products from multiple trusted vendors.</p>
-        <button>Explore Products</button>
-      </section>
+      <main>
+        <section className="hero">
+          <h2>Multi-Vendor Marketplace</h2>
+          <p>Discover products from trusted vendors.</p>
+        </section>
 
-      <section className="products">
-        <h2>Featured Products</h2>
+        <section className="products">
+          <h2>Products</h2>
 
-        <div className="product-grid">
-          {products.map((product) => (
-            <div className="product-card" key={product.id}>
-              <div className="product-image">Product</div>
+          {loading && <p>Loading products...</p>}
 
-              <h3>{product.name}</h3>
+          {error && <p className="error">{error}</p>}
 
-              <p>Vendor: {product.vendor}</p>
+          {!loading && !error && products.length === 0 && (
+            <p>No products available.</p>
+          )}
 
-              <h3>₹{product.price}</h3>
+          <div className="product-grid">
+            {products.map((product) => (
+              <div className="product-card" key={product._id}>
+                <div className="product-image">🛍️</div>
 
-              <button onClick={() => addToCart(product)}>
-                Add to Cart
-              </button>
-            </div>
-          ))}
-        </div>
-      </section>
+                <div className="product-info">
+                  <h3>{product.name}</h3>
+                  <p>{product.category}</p>
+                  <h4>₹{product.price}</h4>
+                  <p>Vendor: {product.vendorId?.name || "Vendor"}</p>
 
-      <footer>
-        <p>© 2026 Axlero Marketplace</p>
-      </footer>
+                  <button>Add to Cart</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </main>
     </div>
   );
 }
