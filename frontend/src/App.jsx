@@ -3,26 +3,18 @@ import "./styles.css";
 
 function App() {
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [cart, setCart] = useState([]);
 
   useEffect(() => {
     fetch("http://localhost:5000/api/products")
-      .then(async (res) => {
-        if (!res.ok) {
-          throw new Error("Failed to load products");
-        }
-        return res.json();
-      })
-      .then((data) => {
-        setProducts(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setLoading(false);
-      });
+      .then((res) => res.json())
+      .then((data) => setProducts(data))
+      .catch(() => {});
   }, []);
+
+  const addToCart = (product) => {
+    setCart([...cart, product]);
+  };
 
   return (
     <div className="app">
@@ -32,7 +24,7 @@ function App() {
         <nav>
           <span>Home</span>
           <span>Products</span>
-          <span>Cart 🛒</span>
+          <span>Cart 🛒 ({cart.length})</span>
         </nav>
       </header>
 
@@ -45,14 +37,6 @@ function App() {
         <section className="products">
           <h2>Products</h2>
 
-          {loading && <p>Loading products...</p>}
-
-          {error && <p className="error">{error}</p>}
-
-          {!loading && !error && products.length === 0 && (
-            <p>No products available.</p>
-          )}
-
           <div className="product-grid">
             {products.map((product) => (
               <div className="product-card" key={product._id}>
@@ -62,9 +46,13 @@ function App() {
                   <h3>{product.name}</h3>
                   <p>{product.category}</p>
                   <h4>₹{product.price}</h4>
-                  <p>Vendor: {product.vendorId?.name || "Vendor"}</p>
+                  <p>
+                    Vendor: {product.vendorId?.name || "Vendor"}
+                  </p>
 
-                  <button>Add to Cart</button>
+                  <button onClick={() => addToCart(product)}>
+                    Add to Cart
+                  </button>
                 </div>
               </div>
             ))}
