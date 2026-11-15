@@ -13,8 +13,47 @@ function App() {
   }, []);
 
   const addToCart = (product) => {
-    setCart([...cart, product]);
+    const existing = cart.find((item) => item._id === product._id);
+
+    if (existing) {
+      setCart(
+        cart.map((item) =>
+          item._id === product._id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        )
+      );
+    } else {
+      setCart([...cart, { ...product, quantity: 1 }]);
+    }
   };
+
+  const increaseQuantity = (id) => {
+    setCart(
+      cart.map((item) =>
+        item._id === id
+          ? { ...item, quantity: item.quantity + 1 }
+          : item
+      )
+    );
+  };
+
+  const decreaseQuantity = (id) => {
+    setCart(
+      cart
+        .map((item) =>
+          item._id === id
+            ? { ...item, quantity: item.quantity - 1 }
+            : item
+        )
+        .filter((item) => item.quantity > 0)
+    );
+  };
+
+  const total = cart.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
 
   return (
     <div className="app">
@@ -57,6 +96,39 @@ function App() {
               </div>
             ))}
           </div>
+        </section>
+
+        <section className="cart">
+          <h2>Shopping Cart</h2>
+
+          {cart.length === 0 ? (
+            <p>Your cart is empty.</p>
+          ) : (
+            <>
+              {cart.map((item) => (
+                <div className="cart-item" key={item._id}>
+                  <div>
+                    <h3>{item.name}</h3>
+                    <p>₹{item.price} × {item.quantity}</p>
+                  </div>
+
+                  <div>
+                    <button onClick={() => decreaseQuantity(item._id)}>
+                      −
+                    </button>
+
+                    <span> {item.quantity} </span>
+
+                    <button onClick={() => increaseQuantity(item._id)}>
+                      +
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              <h3>Cart Total: ₹{total}</h3>
+            </>
+          )}
         </section>
       </main>
     </div>
